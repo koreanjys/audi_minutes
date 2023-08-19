@@ -21,13 +21,13 @@
 
 ## 프로그램 다운로드
 - [ffmpegInstaller](https://drive.google.com/file/d/1iUPL9IkJgkhaJiuBPyb9EuFkELSMjkbW/view?usp=drive_link)
-- [audi_minutes.exe](https://drive.google.com/file/d/1dCi8oRw0Yr_67P4XL1MN8We6x4phuBRR/view?usp=drive_link)
+- [audi_minutes.exe](https://drive.google.com/file/d/1acD-vNzYKNf8Hg4ceP5QfW6cps4vT8id/view?usp=drive_link)
 
 
 
 ## 결과
 - 영상 6개의 파일로 실험 결과 거의 유사한 오디오끼리 잘 묶였다.
-- 파라미터를 아래와 같이 0.15로 줬더니 성공했다.
+- 파라미터를 아래와 같이 0.17로 줬더니 성공했다.
 ```
-threshold = 0.15
+threshold = 0.17
 ```

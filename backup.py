@@ -39,7 +39,7 @@ def extract_features(audio_file, segment_duration_sec=3):
         print(f"Error occurred while loading audio file: {exc}")
         return np.zeros((128, segment_duration_sec * sr // 512 + 1))
 
-    mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=20)
+    mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=20)  # 20개의 MFCC 계수를 추출합니다.
     return mfcc
 
 
@@ -51,8 +51,7 @@ def compute_similarity_by_segments(feature1, feature2):
     feature1 = feature1[:min_rows]
     feature2 = feature2[:min_rows]
 
-    min_cols = min(feature1.shape[1], feature2.shape[1])
-    score = np.mean([cosine(feature1[:, i], feature2[:, i]) for i in range(min_cols)])
+    score = np.mean([cosine(feature1[:, i], feature2[:, i]) for i in range(feature1.shape[1])])
     return score
 
 
@@ -65,29 +64,18 @@ def main(video_files):
         features = extract_features(output_audio_file)
         extracted_features.append(features)
 
-    threshold = 0.17
-    same_audio_videos_dict = {}
+    threshold = 0.15
+    same_audio_videos = []
 
     for i in range(len(extracted_features)):
         for j in range(i + 1, len(extracted_features)):
             similarity = compute_similarity_by_segments(extracted_features[i], extracted_features[j])
 
             if similarity < threshold:
-                found_group = False
-                for k, v in same_audio_videos_dict.items():
-                    if i in v or j in v:
-                        v.add(i)
-                        v.add(j)
-                        found_group = True
-                        break
+                same_audio_videos.append((video_files[i], video_files[j]))
 
-                if not found_group:
-                    same_audio_videos_dict[len(same_audio_videos_dict)] = {i, j}
-
-    same_audio_videos_list = list(same_audio_videos_dict.values())
-
-    print("Same audio video groups:", same_audio_videos_list)
-    return same_audio_videos_list
+    print("Same audio videos:", same_audio_videos)
+    return same_audio_videos
 
 
 def move_videos_to_folders(same_audio_videos_list):
@@ -95,15 +83,14 @@ def move_videos_to_folders(same_audio_videos_list):
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
-    for group_index, video_group in enumerate(same_audio_videos_list):
-        group_folder = os.path.join(output_folder, f'group_{group_index + 1}')
+    for i, videos in enumerate(same_audio_videos_list):
+        group_folder = os.path.join(output_folder, f'group_{i + 1}')
         if not os.path.exists(group_folder):
             os.makedirs(group_folder)
 
-        for video_index in video_group:
-            src = video_files[video_index]
-            dst = os.path.join(group_folder, os.path.basename(src))
-            shutil.copyfile(src, dst)
+        for video_file in videos:
+            dst = os.path.join(group_folder, os.path.basename(video_file))
+            shutil.copyfile(video_file, dst)
 
     print(f"Successfully moved {len(same_audio_videos_list)} groups of similar videos into '{output_folder}' folder.")
 
